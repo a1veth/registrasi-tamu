@@ -2,16 +2,21 @@ package routes
 
 import (
 	"registrasi-tamu/controllers"
+	"registrasi-tamu/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRoutes(r *gin.Engine) {
-	r.POST("/guests", controllers.CreateGuest)
-	r.GET("/guests", controllers.GetGuests)
-	r.GET("/guests/today", controllers.GetGuestsToday)
-	r.GET("/guests/csv", controllers.ExportCSV)
-	r.GET("/guests/pdf", controllers.ExportPDF)
+    r.POST("/login", controllers.Login)
 
-	r.POST("/login", controllers.Login)
+    auth := r.Group("/")
+    auth.Use(middleware.AuthMiddleware())
+    {
+        auth.POST("/guests", controllers.CreateGuest)
+        auth.GET("/guests", controllers.GetGuests)
+        auth.GET("/guests/today", controllers.GetGuestsToday)
+        auth.GET("/guests/csv", controllers.ExportCSV)
+        auth.GET("/guests/pdf", controllers.ExportPDF)
+    }
 }

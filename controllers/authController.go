@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"registrasi-tamu/config"
 	"registrasi-tamu/models"
+	"registrasi-tamu/utils"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -19,14 +20,20 @@ func Login(c *gin.Context) {
 	}
 
 	if err := config.DB.Where("username = ?", input.Username).First(&admin).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid  or password"})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or "})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	token, err := utils.GenerateToken(admin.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

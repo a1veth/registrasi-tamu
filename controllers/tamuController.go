@@ -25,31 +25,31 @@ func CreateGuest(c *gin.Context) {
 }
 
 func GetGuests(c *gin.Context) {
-    page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-    limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-    offset := (page - 1) * limit
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	offset := (page - 1) * limit
 
-    name := c.Query("name")
+	name := c.Query("name")
 
-    var guests []models.Tamu
-    query := config.DB.Model(&models.Tamu{})
+	var guests []models.Tamu
+	query := config.DB.Model(&models.Tamu{})
 
-    if name != "" {
-        query = query.Where("name ILIKE ?", "%"+name+"%")
-    }
+	if name != "" {
+		query = query.Where("name ILIKE ?", "%"+name+"%")
+	}
 
-    var total int64
-    query.Count(&total)
+	var total int64
+	query.Count(&total)
 
-    query.Order("created_at desc").Limit(limit).Offset(offset).Find(&guests)
+	query.Order("created_at desc").Limit(limit).Offset(offset).Find(&guests)
 
-    c.JSON(http.StatusOK, gin.H{
-        "data":       guests,
-        "total":      total,
-        "page":       page,
-        "limit":      limit,
-        "totalPages": (total + int64(limit) - 1) / int64(limit),
-    })
+	c.JSON(http.StatusOK, gin.H{
+		"data":       guests,
+		"total":      total,
+		"page":       page,
+		"limit":      limit,
+		"totalPages": (total + int64(limit) - 1) / int64(limit),
+	})
 }
 
 func GetGuestsToday(c *gin.Context) {
@@ -88,13 +88,13 @@ func ExportPDF(c *gin.Context) {
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
-	pdf.SetFont("Arial", "B", 14)
-	pdf.Cell(40, 10, "Guest List")
+	pdf.SetFont("Arial", "B", 15)
+	pdf.Cell(40, 10, "List Tamu")
 	pdf.Ln(12)
 
-	pdf.SetFont("Arial", "", 10)
+	pdf.SetFont("Arial", "", 11)
 	for _, guest := range guests {
-		pdf.CellFormat(0, 10, guest.Name+" - "+guest.Company+" - "+guest.Visiting+" - "+guest.IDCard+" - "+guest.CreatedAt.Format("2006-01-02 15:04"), "0", 1, "", false, 0, "")
+		pdf.CellFormat(0, 10, "| Nama: "+guest.Name+" | ID Card: "+guest.IDCard+" | Asal: "+guest.Company+" | Mengunjungi: "+guest.Visiting+" | Waktu: "+guest.CreatedAt.Format("2006-01-02 15:04")+" |", "0", 1, "", false, 0, "")
 	}
 
 	filename := "guests.pdf"
